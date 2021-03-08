@@ -1,5 +1,7 @@
 package model
 
+import io.circe.generic.JsonCodec
+
 sealed trait Condition
 
 object Condition {
@@ -7,5 +9,5 @@ object Condition {
     candidateCondition.minSalaryAcceptable <= employersCondition.maxSalaryAcceptable
 }
 
-case class CandidateCondition(minSalaryAcceptable: Int) extends Condition
-case class EmployersCondition(maxSalaryAcceptable: Int) extends Condition
+@JsonCodec case class CandidateCondition(minSalaryAcceptable: Int) extends Condition
+@JsonCodec case class EmployersCondition(maxSalaryAcceptable: Int) extends Condition

@@ -1,44 +1,67 @@
-//import cats.effect.{ContextShift, IO, Timer}
-//import config.Config
-//import io.circe.Json
-//import io.circe.literal._
-//import io.circe.optics.JsonPath._
-//import org.http4s.circe._
-//import org.http4s.client.blaze.BlazeClientBuilder
-//import org.http4s.{Method, Request, Status, Uri}
-//import org.scalatest.BeforeAndAfterAll
-//import org.scalatest.concurrent.Eventually
-//import org.scalatest.matchers.should.Matchers
-//import org.scalatest.time.{Millis, Seconds, Span}
-//import org.scalatest.wordspec.AnyWordSpec
-//
-//import scala.concurrent.ExecutionContext
-//import scala.concurrent.ExecutionContext.Implicits.global
-//
-//class TodoServerSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll with Eventually {
-//  private implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
-//
-//  private implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
-//
-//  private lazy val client = BlazeClientBuilder[IO](global).resource
-//
-//  private val configFile = "test.conf"
-//
-//  private lazy val config = Config.load(configFile).use(config => IO.pure(config)).unsafeRunSync()
-//
-//  private lazy val urlStart = s"http://${config.server.host}:${config.server.port}"
-//
-//  implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = scaled(Span(5, Seconds)), interval = scaled(Span(100, Millis)))
-//
-//  override def beforeAll(): Unit = {
-//    HttpServer.create(configFile).unsafeRunAsyncAndForget()
-//    eventually {
-//      client.use(_.statusFromUri(Uri.unsafeFromString(s"$urlStart/todos"))).unsafeRunSync() shouldBe Status.Ok
-//    }
-//    ()
-//  }
-//
-//  "Todo server" should {
+import cats.effect.{ContextShift, IO, Timer}
+import config.Config
+import io.circe.Json
+import io.circe.literal._
+import io.circe.optics.JsonPath._
+import io.circe.syntax._
+import model.{CandidateCondition, EmployersCondition, PostCandidateConditionResponse, PostEmployerConditionResponse}
+import org.http4s.circe._
+import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.{Method, Request, Status, Uri}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.concurrent.Eventually
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.wordspec.AnyWordSpec
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll with Eventually {
+  private implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
+
+  private implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
+  private lazy val client = BlazeClientBuilder[IO](global).resource
+
+  private val configFile = "test.conf"
+
+  private lazy val config = Config.load(configFile).use(config => IO.pure(config)).unsafeRunSync()
+
+  private lazy val urlStart = s"http://${config.server.host}:${config.server.port}"
+
+  implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = scaled(Span(5, Seconds)), interval = scaled(Span(100, Millis)))
+
+  override def beforeAll(): Unit = {
+    HttpServer.create(configFile).unsafeRunAsyncAndForget()
+    // TODO: add some sleep
+  }
+
+  "Salary Standoff API" should {
+    "if conditions compatible, POST /employer_condition returns false" in {
+      val candidateCondition = CandidateCondition(minSalaryAcceptable = 40)
+      val employerCondition = EmployersCondition(maxSalaryAcceptable = 50)
+
+      val candidateRequest = Request[IO](
+        method = Method.POST,
+        uri = Uri.unsafeFromString(s"$urlStart/candidate_condition")
+      ).withEntity(candidateCondition.asJson)
+
+      val candidateResponse = client.use(_.expect[Json](candidateRequest)).unsafeRunSync().as[PostCandidateConditionResponse].toOption.get
+
+      val employerRequest = Request[IO](
+        method = Method.POST,
+        uri = Uri.unsafeFromString(s"$urlStart/employer_condition/${candidateResponse.conditionId}")
+      ).withEntity(employerCondition.asJson)
+
+      val employerResponse = client.use(_.expect[Json](employerRequest)).unsafeRunSync().as[PostEmployerConditionResponse].toOption.get
+
+      employerResponse.areConditionsCompatible shouldBe true
+    }
+
+    "if conditions compatible, POST /employer_condition returns true" in pending
+    "can't check one condition for compatibility more than once" in pending
+
 //    "create a todo" in {
 //      val description = "my todo 1"
 //      val importance = "high"
@@ -127,8 +150,8 @@
 //          }
 //        ]"""
 //    }
-//  }
-//
+  }
+
 //  private def createTodo(description: String, importance: String): Long = {
 //    val createJson = json"""
 //      {
@@ -140,4 +163,4 @@
 //    root.id.long.getOption(json).nonEmpty shouldBe true
 //    root.id.long.getOption(json).get
 //  }
-//}
+}

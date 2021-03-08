@@ -6,26 +6,19 @@ lazy val commonSettings = Seq(
     "-deprecation",
     "-Xfatal-warnings",
     "-Ywarn-value-discard",
-    "-Xlint:missing-interpolator"
+    "-Xlint:missing-interpolator",
+    "-Ymacro-annotations"
   ),
 )
 
 lazy val Http4sVersion = "0.21.15"
-
 lazy val DoobieVersion = "0.10.0"
-
 lazy val H2Version = "1.4.200"
-
 lazy val FlywayVersion = "7.5.2"
-
 lazy val CirceVersion = "0.13.0"
-
 lazy val PureConfigVersion = "0.12.3"
-
 lazy val LogbackVersion = "1.2.3"
-
 lazy val ScalaTestVersion = "3.2.3"
-
 lazy val ScalaMockVersion = "5.1.0"
 
 lazy val root = (project in file("."))

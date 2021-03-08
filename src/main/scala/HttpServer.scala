@@ -6,8 +6,8 @@ import doobie.util.ExecutionContexts
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze._
-import repository.TodoRepository
-import service.TodoService
+import repository.ConditionsRepository
+import service.ConditionsService
 import scala.concurrent.ExecutionContext.global
 
 object HttpServer {
@@ -27,10 +27,10 @@ object HttpServer {
   private def create(resources: Resources)(implicit concurrentEffect: ConcurrentEffect[IO], timer: Timer[IO]): IO[ExitCode] = {
     for {
       _ <- Database.initialize(resources.transactor)
-      repository = new TodoRepository(resources.transactor)
+      repository = ???
       exitCode <- BlazeServerBuilder[IO](global)
         .bindHttp(resources.config.server.port, resources.config.server.host)
-        .withHttpApp(new TodoService(repository).routes.orNotFound).serve.compile.lastOrError
+        .withHttpApp(new ConditionsService(repository).routes.orNotFound).serve.compile.lastOrError
     } yield exitCode
   }
 
