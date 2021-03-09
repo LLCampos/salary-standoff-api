@@ -3,11 +3,11 @@ import config.Config
 import db.Database
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
-import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze._
-import repository.ConditionsRepository
+import repository.DatabaseConditionsRepository
 import service.ConditionsService
+
 import scala.concurrent.ExecutionContext.global
 
 object HttpServer {
@@ -27,7 +27,7 @@ object HttpServer {
   private def create(resources: Resources)(implicit concurrentEffect: ConcurrentEffect[IO], timer: Timer[IO]): IO[ExitCode] = {
     for {
       _ <- Database.initialize(resources.transactor)
-      repository = ???
+      repository = new DatabaseConditionsRepository(resources.transactor)
       exitCode <- BlazeServerBuilder[IO](global)
         .bindHttp(resources.config.server.port, resources.config.server.host)
         .withHttpApp(new ConditionsService(repository).routes.orNotFound).serve.compile.lastOrError

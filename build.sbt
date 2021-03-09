@@ -48,6 +48,7 @@ lazy val root = (project in file("."))
       "com.github.pureconfig" %% "pureconfig-cats-effect" % PureConfigVersion,
 
       "ch.qos.logback"        %  "logback-classic"      % LogbackVersion,
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
 
       "org.scalatest"         %% "scalatest"            % ScalaTestVersion  % "it,test",
       "org.scalamock"         %% "scalamock"            % ScalaMockVersion  % "test"

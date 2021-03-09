@@ -1,23 +1,22 @@
 import cats.effect.{ContextShift, IO, Timer}
 import config.Config
 import io.circe.Json
-import io.circe.literal._
-import io.circe.optics.JsonPath._
 import io.circe.syntax._
 import model.{CandidateCondition, EmployersCondition, PostCandidateConditionResponse, PostEmployerConditionResponse}
 import org.http4s.circe._
 import org.http4s.client.blaze.BlazeClientBuilder
-import org.http4s.{Method, Request, Status, Uri}
-import org.scalatest.BeforeAndAfterAll
+import org.http4s.{Method, Request, Uri}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
-class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll with Eventually {
+class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with Eventually {
   private implicit val timer: Timer[IO] = IO.timer(ExecutionContext.global)
 
   private implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
@@ -34,7 +33,7 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
 
   override def beforeAll(): Unit = {
     HttpServer.create(configFile).unsafeRunAsyncAndForget()
-    // TODO: add some sleep
+    IO.sleep(5.seconds).unsafeRunSync()
   }
 
   "Salary Standoff API" should {

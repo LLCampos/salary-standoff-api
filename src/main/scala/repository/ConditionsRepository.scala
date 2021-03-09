@@ -6,6 +6,6 @@ trait ConditionsRepository[F[_]] {
   type ConditionId = String
 
   def addCandidateCondition(candidateCondition: CandidateCondition): F[ConditionId]
-  def getCandidateCondition(conditionId: ConditionId): F[CandidateCondition]
-  def markedConditionAsVerified(conditionId: ConditionId): F[Unit]
+  def getCandidateCondition(conditionId: ConditionId): F[Option[CandidateCondition]]
+  def deleteCondition(conditionId: ConditionId): F[Unit]
 }
