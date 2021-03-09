@@ -1,3 +1,5 @@
+import sbt.Keys.fork
+
 lazy val commonSettings = Seq(
   name := "salary-standoff-api",
   version := "1.0-SNAPSHOT",
@@ -52,5 +54,6 @@ lazy val root = (project in file("."))
 
       "org.scalatest"         %% "scalatest"            % ScalaTestVersion  % "it,test",
       "org.scalamock"         %% "scalamock"            % ScalaMockVersion  % "test"
-    )
+    ),
+    fork in IntegrationTest := true,
   )
