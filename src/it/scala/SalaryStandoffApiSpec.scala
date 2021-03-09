@@ -33,7 +33,7 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
 
   override def beforeAll(): Unit = {
     HttpServer.create(configFile).unsafeRunAsyncAndForget()
-    IO.sleep(5.seconds).unsafeRunSync()
+    IO.sleep(1.seconds).unsafeRunSync()
   }
 
   "Salary Standoff API" should {
