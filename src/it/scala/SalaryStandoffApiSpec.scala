@@ -37,7 +37,7 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
   }
 
   "Salary Standoff API" should {
-    "if conditions compatible, POST /employer_condition returns false" in {
+    "return true on POST /employer_condition if conditions are compatible" in {
       val candidateCondition = CandidateCondition(minSalaryAcceptable = 40)
       val employerCondition = EmployersCondition(maxSalaryAcceptable = 50)
 
@@ -58,7 +58,7 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
       employerResponse.areConditionsCompatible shouldBe true
     }
 
-    "if conditions compatible, POST /employer_condition returns true" in {
+    "return false on POST /employer_condition if conditions are not compatible" in {
       val candidateCondition = CandidateCondition(minSalaryAcceptable = 50)
       val employerCondition = EmployersCondition(maxSalaryAcceptable = 40)
 
@@ -79,7 +79,7 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
       employerResponse.areConditionsCompatible shouldBe false
     }
 
-    "can't check one condition for compatibility more than once" in {
+    "fail when trying to check condition for compatibility more than once" in {
       val candidateCondition = CandidateCondition(minSalaryAcceptable = 50)
       val employerCondition = EmployersCondition(maxSalaryAcceptable = 40)
 
