@@ -20,5 +20,6 @@ class DatabaseConditionsRepository[F[_]](transactor: Transactor[F])(implicit F: 
       .option
       .transact(transactor)
 
-  def deleteCondition(conditionId: ConditionId): F[Unit] = ???
+  def deleteCondition(conditionId: ConditionId): F[Unit] =
+    sql"DELETE FROM condition WHERE uuid = $conditionId".update.run.transact(transactor).as(())
 }

@@ -1,41 +1,41 @@
 package service
 
-import cats.data.OptionT
 import cats.effect.Sync
 import cats.syntax.all._
 import com.typesafe.scalalogging.LazyLogging
-import io.circe.Json
 import io.circe.syntax._
 import model.CandidateCondition._
-import model.{CandidateCondition, Condition, EmployersCondition, PostCandidateConditionResponse, PostEmployerConditionResponse}
-import org.http4s.HttpRoutes
+import model._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
+import org.http4s.{EntityDecoder, HttpRoutes}
 import repository.ConditionsRepository
 
 
 class ConditionsService[F[_]](repository: ConditionsRepository[F])(implicit F: Sync[F]) extends Http4sDsl[F] with LazyLogging {
 
+  implicit private val CandidateConditionDecoder: EntityDecoder[F, CandidateCondition] = jsonOf[F, CandidateCondition]
+  implicit private val EmployersConditionDecoder: EntityDecoder[F, EmployersCondition] = jsonOf[F, EmployersCondition]
+
   val routes: HttpRoutes[F] = HttpRoutes.of[F] {
     case req @ POST -> Root / "candidate_condition" => for {
-      candidateCondition <- req.as[Json].map(_.as[CandidateCondition])
-      resp <- candidateCondition match {
-        case Right(condition) => repository.addCandidateCondition(condition).flatMap(
+      candidateCondition <- req.as[CandidateCondition]
+      resp <- repository.addCandidateCondition(candidateCondition).flatMap(
           conditionId => Ok(PostCandidateConditionResponse(conditionId).asJson)
         )
-        case Left(err) =>
-          BadRequest(err.toString())
-      }
     } yield resp
 
-    case req @ POST -> Root / "employer_condition" / UUIDVar(conditionId) => (for {
-      employerCondition <- OptionT(req.as[Json].map(_.as[EmployersCondition]).map(_.toOption))
-      candidateCondition <- OptionT(repository.getCandidateCondition(conditionId.toString))
-    } yield PostEmployerConditionResponse(
-      Condition.areConditionsCompatible(candidateCondition, employerCondition)
-    )).value.flatMap {
-      case Some(resp) => Ok(resp.asJson)
-      case None => BadRequest()
-    }
+    case req @ POST -> Root / "employer_condition" / UUIDVar(conditionId) => for {
+      employerCondition <- req.as[EmployersCondition]
+      candidateConditionOpt <- repository.getCandidateCondition(conditionId.toString)
+      res <- candidateConditionOpt match {
+        case Some(candidateCondition) =>
+          repository.deleteCondition(conditionId.toString) >> {
+            val response = PostEmployerConditionResponse(Condition.areConditionsCompatible(candidateCondition, employerCondition))
+            Ok(response.asJson)
+          }
+        case None => NotFound()
+      }
+    } yield res
   }
 }

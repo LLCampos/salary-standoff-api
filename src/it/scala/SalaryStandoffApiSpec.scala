@@ -79,6 +79,27 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
       employerResponse.areConditionsCompatible shouldBe false
     }
 
-    "can't check one condition for compatibility more than once" in pending
+    "can't check one condition for compatibility more than once" in {
+      val candidateCondition = CandidateCondition(minSalaryAcceptable = 50)
+      val employerCondition = EmployersCondition(maxSalaryAcceptable = 40)
+
+      val candidateRequest = Request[IO](
+        method = Method.POST,
+        uri = Uri.unsafeFromString(s"$urlStart/candidate_condition")
+      ).withEntity(candidateCondition.asJson)
+
+      val candidateResponse = client.use(_.expect[Json](candidateRequest)).unsafeRunSync().as[PostCandidateConditionResponse].toOption.get
+
+      val employerRequest = Request[IO](
+        method = Method.POST,
+        uri = Uri.unsafeFromString(s"$urlStart/employer_condition/${candidateResponse.conditionId}")
+      ).withEntity(employerCondition.asJson)
+
+      val statusFirstTime = client.use(_.status(employerRequest)).unsafeRunSync()
+      val statusSecondTime = client.use(_.status(employerRequest)).unsafeRunSync()
+
+      statusFirstTime.code shouldBe 200
+      statusSecondTime.code shouldBe 404
+    }
   }
 }
