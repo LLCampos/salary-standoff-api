@@ -2,7 +2,7 @@ import sbt.Keys.fork
 
 lazy val commonSettings = Seq(
   name := "salary-standoff-api",
-  version := "1.0-SNAPSHOT",
+  version := "0.0.1-SNAPSHOT",
   scalaVersion := "2.13.4",
   scalacOptions ++= Seq(
     "-deprecation",
