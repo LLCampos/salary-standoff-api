@@ -5,6 +5,7 @@ import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
 import org.http4s.implicits._
 import org.http4s.server.blaze._
+import org.http4s.server.middleware.CORS
 import repository.DatabaseConditionsRepository
 import service.ConditionsService
 
@@ -30,7 +31,7 @@ object HttpServer {
       repository = new DatabaseConditionsRepository(resources.transactor)
       exitCode <- BlazeServerBuilder[IO](global)
         .bindHttp(resources.config.server.port, resources.config.server.host)
-        .withHttpApp(new ConditionsService(repository).routes.orNotFound).serve.compile.lastOrError
+        .withHttpApp(CORS(new ConditionsService(repository).routes).orNotFound).serve.compile.lastOrError
     } yield exitCode
   }
 
