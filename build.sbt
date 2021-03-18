@@ -57,3 +57,5 @@ lazy val root = (project in file("."))
     ),
     fork in IntegrationTest := true,
   )
+
+enablePlugins(JavaAppPackaging)
