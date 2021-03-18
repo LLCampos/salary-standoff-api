@@ -10,6 +10,7 @@ import repository.DatabaseConditionsRepository
 import service.ConditionsService
 
 import scala.concurrent.ExecutionContext.global
+import scala.util.Properties
 
 object HttpServer {
   def create(configFile: String = "application.conf")(implicit contextShift: ContextShift[IO], concurrentEffect: ConcurrentEffect[IO], timer: Timer[IO]): IO[ExitCode] = {
@@ -29,8 +30,9 @@ object HttpServer {
     for {
       _ <- Database.initialize(resources.transactor)
       repository = new DatabaseConditionsRepository(resources.transactor)
+      port = Properties.envOrElse("PORT", resources.config.server.port.toString).toInt
       exitCode <- BlazeServerBuilder[IO](global)
-        .bindHttp(resources.config.server.port, resources.config.server.host)
+        .bindHttp(port, resources.config.server.host)
         .withHttpApp(CORS(new ConditionsService(repository).routes).orNotFound).serve.compile.lastOrError
     } yield exitCode
   }
