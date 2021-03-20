@@ -16,6 +16,7 @@ object Database {
       case Some(dbUrl) =>
         val hikariConfig = new HikariConfig()
         hikariConfig.setJdbcUrl(dbUrl)
+        hikariConfig.setDriverClassName("org.postgresql.Driver")
         HikariTransactor.fromHikariConfig(hikariConfig, executionContext, blocker)
       // Local
       case None =>
