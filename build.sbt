@@ -35,6 +35,7 @@ lazy val root = (project in file("."))
       "org.http4s"            %% "http4s-blaze-client"  % Http4sVersion     % "it,test",
 
       "org.tpolecat"          %% "doobie-core"          % DoobieVersion,
+      "org.tpolecat"          %% "doobie-postgres"      % DoobieVersion,
       "org.tpolecat"          %% "doobie-h2"            % DoobieVersion,
       "org.tpolecat"          %% "doobie-hikari"        % DoobieVersion,
 
