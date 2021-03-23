@@ -2,7 +2,7 @@ import cats.effect.{ContextShift, IO, Timer}
 import config.Config
 import io.circe.Json
 import io.circe.syntax._
-import model.{CandidateCondition, EmployersCondition, PostCandidateConditionResponse, PostEmployerConditionResponse}
+import model.{CandidateCondition, ConditionMetadata, EmployersCondition, PostCandidateConditionResponse, PostEmployerConditionResponse}
 import org.http4s.circe._
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.{Method, Request, Uri}
@@ -36,9 +36,11 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
     IO.sleep(1.seconds).unsafeRunSync()
   }
 
+  private val conditionMetadataSample: ConditionMetadata = ConditionMetadata("", "", "", None)
+
   "Salary Standoff API" should {
     "return true on POST /employer_condition if conditions are compatible" in {
-      val candidateCondition = CandidateCondition(minSalaryAcceptable = 40)
+      val candidateCondition = CandidateCondition(minSalaryAcceptable = 40, conditionMetadataSample)
       val employerCondition = EmployersCondition(maxSalaryAcceptable = 50)
 
       val candidateRequest = Request[IO](
@@ -59,7 +61,7 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
     }
 
     "return false on POST /employer_condition if conditions are not compatible" in {
-      val candidateCondition = CandidateCondition(minSalaryAcceptable = 50)
+      val candidateCondition = CandidateCondition(minSalaryAcceptable = 50, conditionMetadataSample)
       val employerCondition = EmployersCondition(maxSalaryAcceptable = 40)
 
       val candidateRequest = Request[IO](
@@ -80,7 +82,7 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
     }
 
     "fail when trying to check condition for compatibility more than once" in {
-      val candidateCondition = CandidateCondition(minSalaryAcceptable = 50)
+      val candidateCondition = CandidateCondition(minSalaryAcceptable = 50, conditionMetadataSample)
       val employerCondition = EmployersCondition(maxSalaryAcceptable = 40)
 
       val candidateRequest = Request[IO](

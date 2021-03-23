@@ -25,6 +25,10 @@ class ConditionsService[F[_]](repository: ConditionsRepository[F])(implicit F: S
         )
     } yield resp
 
+    case req @ GET -> Root / "candidate_condition" / "metadata" / UUIDVar(conditionId) =>
+      ???
+
+
     case req @ POST -> Root / "employer_condition" / UUIDVar(conditionId) => for {
       employerCondition <- req.as[EmployersCondition]
       candidateConditionOpt <- repository.getCandidateCondition(conditionId.toString)
