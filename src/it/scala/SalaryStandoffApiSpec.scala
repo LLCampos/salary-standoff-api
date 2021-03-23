@@ -38,7 +38,11 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
 
   private val conditionMetadataSample: ConditionMetadata = ConditionMetadata("", "", "", None)
 
-  implicit private val EmployersConditionDecoder: EntityDecoder[IO, ConditionMetadata] = jsonOf[IO, ConditionMetadata]
+  implicit private val ConditionMetadataDecoder: EntityDecoder[IO, ConditionMetadata] = jsonOf[IO, ConditionMetadata]
+  implicit private val PostCandidateConditionResponseDecoder: EntityDecoder[IO, PostCandidateConditionResponse] =
+    jsonOf[IO, PostCandidateConditionResponse]
+  implicit private val PostEmployerConditionResponseDecoder: EntityDecoder[IO, PostEmployerConditionResponse] =
+    jsonOf[IO, PostEmployerConditionResponse]
 
   "Salary Standoff API" should {
     "return true on POST /employer_condition if conditions are compatible" in {
@@ -50,14 +54,14 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
         uri = Uri.unsafeFromString(s"$urlStart/candidate_condition")
       ).withEntity(candidateCondition.asJson)
 
-      val candidateResponse = client.use(_.expect[Json](candidateRequest)).unsafeRunSync().as[PostCandidateConditionResponse].toOption.get
+      val candidateResponse = client.use(_.expect[PostCandidateConditionResponse](candidateRequest)).unsafeRunSync()
 
       val employerRequest = Request[IO](
         method = Method.POST,
         uri = Uri.unsafeFromString(s"$urlStart/employer_condition/${candidateResponse.conditionId}")
       ).withEntity(employerCondition.asJson)
 
-      val employerResponse = client.use(_.expect[Json](employerRequest)).unsafeRunSync().as[PostEmployerConditionResponse].toOption.get
+      val employerResponse = client.use(_.expect[PostEmployerConditionResponse](employerRequest)).unsafeRunSync()
 
       employerResponse.areConditionsCompatible shouldBe true
     }
@@ -71,14 +75,14 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
         uri = Uri.unsafeFromString(s"$urlStart/candidate_condition")
       ).withEntity(candidateCondition.asJson)
 
-      val candidateResponse = client.use(_.expect[Json](candidateRequest)).unsafeRunSync().as[PostCandidateConditionResponse].toOption.get
+      val candidateResponse = client.use(_.expect[PostCandidateConditionResponse](candidateRequest)).unsafeRunSync()
 
       val employerRequest = Request[IO](
         method = Method.POST,
         uri = Uri.unsafeFromString(s"$urlStart/employer_condition/${candidateResponse.conditionId}")
       ).withEntity(employerCondition.asJson)
 
-      val employerResponse = client.use(_.expect[Json](employerRequest)).unsafeRunSync().as[PostEmployerConditionResponse].toOption.get
+      val employerResponse = client.use(_.expect[PostEmployerConditionResponse](employerRequest)).unsafeRunSync()
 
       employerResponse.areConditionsCompatible shouldBe false
     }
@@ -92,7 +96,7 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
         uri = Uri.unsafeFromString(s"$urlStart/candidate_condition")
       ).withEntity(candidateCondition.asJson)
 
-      val candidateResponse = client.use(_.expect[Json](candidateRequest)).unsafeRunSync().as[PostCandidateConditionResponse].toOption.get
+      val candidateResponse = client.use(_.expect[PostCandidateConditionResponse](candidateRequest)).unsafeRunSync()
 
       val employerRequest = Request[IO](
         method = Method.POST,
@@ -115,7 +119,7 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
         uri = Uri.unsafeFromString(s"$urlStart/candidate_condition")
       ).withEntity(candidateCondition.asJson)
 
-      val candidateResponse = client.use(_.expect[Json](candidateRequest)).unsafeRunSync().as[PostCandidateConditionResponse].toOption.get
+      val candidateResponse = client.use(_.expect[PostCandidateConditionResponse](candidateRequest)).unsafeRunSync()
 
       val metadataRequest = Request[IO](
         method = Method.GET,
