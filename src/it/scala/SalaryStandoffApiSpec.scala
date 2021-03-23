@@ -5,7 +5,7 @@ import io.circe.syntax._
 import model.{CandidateCondition, ConditionMetadata, EmployersCondition, PostCandidateConditionResponse, PostEmployerConditionResponse}
 import org.http4s.circe._
 import org.http4s.client.blaze.BlazeClientBuilder
-import org.http4s.{Method, Request, Uri}
+import org.http4s.{EntityDecoder, Method, Request, Uri}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -37,6 +37,8 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
   }
 
   private val conditionMetadataSample: ConditionMetadata = ConditionMetadata("", "", "", None)
+
+  implicit private val EmployersConditionDecoder: EntityDecoder[IO, ConditionMetadata] = jsonOf[IO, ConditionMetadata]
 
   "Salary Standoff API" should {
     "return true on POST /employer_condition if conditions are compatible" in {
@@ -102,6 +104,27 @@ class SalaryStandoffApiSpec extends AnyWordSpec with Matchers with BeforeAndAfte
 
       statusFirstTime.code shouldBe 200
       statusSecondTime.code shouldBe 404
+    }
+
+    "return condition metadata on GET /condition/metadata/{uuid}" in {
+      val conditionMetadata = ConditionMetadata("USD", "Net", "Monthly", Some("extra!!"))
+      val candidateCondition = CandidateCondition(minSalaryAcceptable = 40, conditionMetadata)
+
+      val candidateRequest = Request[IO](
+        method = Method.POST,
+        uri = Uri.unsafeFromString(s"$urlStart/candidate_condition")
+      ).withEntity(candidateCondition.asJson)
+
+      val candidateResponse = client.use(_.expect[Json](candidateRequest)).unsafeRunSync().as[PostCandidateConditionResponse].toOption.get
+
+      val metadataRequest = Request[IO](
+        method = Method.GET,
+        uri = Uri.unsafeFromString(s"$urlStart/condition/metadata/${candidateResponse.conditionId}")
+      )
+
+      val metadataResponse = client.use(_.expect[ConditionMetadata](metadataRequest)).unsafeRunSync()
+
+      metadataResponse shouldBe conditionMetadata
     }
   }
 }

@@ -30,6 +30,13 @@ class DatabaseConditionsRepository[F[_]](transactor: Transactor[F])(implicit F: 
       .option
       .transact(transactor)
 
+  def getConditionMetadata(conditionId: ConditionId): F[Option[ConditionMetadata]] =
+    sql"""SELECT currency, gross_or_net, annual_or_monthly, extra_comments
+          FROM condition WHERE uuid = $conditionId""".query[ConditionMetadata]
+      .option
+      .transact(transactor)
+
   def deleteCondition(conditionId: ConditionId): F[Unit] =
     sql"DELETE FROM condition WHERE uuid = $conditionId".update.run.transact(transactor).as(())
+
 }
