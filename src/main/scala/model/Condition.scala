@@ -9,5 +9,18 @@ object Condition {
     candidateCondition.minSalaryAcceptable <= employersCondition.maxSalaryAcceptable
 }
 
-@JsonCodec case class CandidateCondition(minSalaryAcceptable: Int) extends Condition
+@JsonCodec
+case class CandidateCondition(
+  minSalaryAcceptable: Int,
+  metadata: ConditionMetadata,
+) extends Condition
+
+@JsonCodec
+case class ConditionMetadata(
+  currency: String,
+  grossOrNet: String,
+  annualOrMonthly: String,
+  extraComments: Option[String]
+)
+
 @JsonCodec case class EmployersCondition(maxSalaryAcceptable: Int) extends Condition

@@ -16,6 +16,7 @@ class ConditionsService[F[_]](repository: ConditionsRepository[F])(implicit F: S
 
   implicit private val CandidateConditionDecoder: EntityDecoder[F, CandidateCondition] = jsonOf[F, CandidateCondition]
   implicit private val EmployersConditionDecoder: EntityDecoder[F, EmployersCondition] = jsonOf[F, EmployersCondition]
+  implicit private val ConditionMetadataDecoder: EntityDecoder[F, ConditionMetadata] = jsonOf[F, ConditionMetadata]
 
   val routes: HttpRoutes[F] = HttpRoutes.of[F] {
     case req @ POST -> Root / "candidate_condition" => for {
@@ -24,6 +25,12 @@ class ConditionsService[F[_]](repository: ConditionsRepository[F])(implicit F: S
           conditionId => Ok(PostCandidateConditionResponse(conditionId).asJson)
         )
     } yield resp
+
+    case GET -> Root / "condition" / "metadata" / UUIDVar(conditionId) =>
+      repository.getConditionMetadata(conditionId.toString).flatMap {
+        case Some(metadata) => Ok(metadata.asJson)
+        case None => NotFound(s"No metadata found for condition with uuid $conditionId")
+      }
 
     case req @ POST -> Root / "employer_condition" / UUIDVar(conditionId) => for {
       employerCondition <- req.as[EmployersCondition]
